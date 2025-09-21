@@ -5,8 +5,6 @@ permissions:
   contents: write
 
 on:
-  schedule:
-    - cron: '*/5 * * * *'   # run every 3 minutes
   workflow_dispatch:         # allow manual runs from UI
 
 jobs:
