@@ -11,10 +11,23 @@ async function updateGist(newLine) {
   const file = gist.data.files[FILE_NAME];
   const oldContent = file && file.content ? file.content.trim() : "timestamp,price";
 
-  // 2. Append new line
-  const updated = oldContent + "\n" + newLine;
+  // 2. Split into rows and prune older than 3 days
+  const rows = oldContent.split("\n");
+  const header = rows[0];
+  const cutoff = Date.now() - 3 * 24 * 60 * 60 * 1000; // 3 days in ms
 
-  // 3. Push update
+  const newRows = rows
+    .slice(1)
+    .filter(r => {
+      const t = new Date(r.split(",")[0]).getTime();
+      return !isNaN(t) && t >= cutoff;
+    });
+
+  // 3. Add new tick
+  newRows.push(newLine);
+  const updated = [header, ...newRows].join("\n");
+
+  // 4. Update Gist
   await octokit.gists.update({
     gist_id: GIST_ID,
     files: {
@@ -22,7 +35,7 @@ async function updateGist(newLine) {
     },
   });
 
-  console.log("Gist updated successfully.");
+  console.log("Gist updated with 3-day pruning.");
 }
 
 module.exports = { updateGist };
