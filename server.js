@@ -1,5 +1,5 @@
 const express = require("express");
-const main = require("./fetchJupPrice");
+const main = require("./fetchJupPriceRender");
 const { updateGist } = require("./gist");
 
 const app = express();
