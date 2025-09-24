@@ -30,33 +30,29 @@ function saveRows(rows) {
   fs.writeFileSync(CSV_FILE, rows.join('\n') + '\n', 'utf8');
 }
 
-function snapTo3Min(date = new Date()) {
-  const d = new Date(date);
-  d.setSeconds(0, 0);
-  const m = d.getMinutes();
-  const snappedMin = m - (m % 3);
-  d.setMinutes(snappedMin);
-  return d;
+// retry wrapper with specific delays
+async function getPriceWithRetry() {
+  const delays = [3000, 5000, 10000]; // ms
+  for (let i = 0; i <= delays.length; i++) {
+    try {
+      return await getPrice();
+    } catch (err) {
+      if (i < delays.length) {
+        console.error(`Attempt ${i + 1} failed: ${err.message || err}. Retrying in ${delays[i] / 1000}s...`);
+        await new Promise(r => setTimeout(r, delays[i]));
+      } else {
+        throw err; // stop after final failure
+      }
+    }
+  }
 }
 
 (async function main() {
   try {
-    const price = await getPrice();
-    const now = snapTo3Min(new Date());
-    const iso = now.toISOString();
+    const price = await getPriceWithRetry();
+    const iso = new Date().toISOString();
 
     let rows = loadRows();
-
-    // avoid duplicate for same snapped timestamp
-    const lastRow = rows.length > 1 ? rows[rows.length - 1] : null;
-    if (lastRow) {
-      const lastTs = lastRow.split(',')[0];
-      if (lastTs === iso) {
-        console.log('Already recorded for', iso);
-        return;
-      }
-    }
-
     rows.push(`${iso},${price}`);
 
     // prune rows older than 3 days
@@ -74,7 +70,7 @@ function snapTo3Min(date = new Date()) {
     saveRows(rows);
     console.log(`Saved ${price} at ${iso}`);
   } catch (err) {
-    console.error('Error:', err.message || err);
+    console.error('All attempts failed:', err.message || err);
     process.exit(1);
   }
 })();
