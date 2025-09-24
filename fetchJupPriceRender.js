@@ -1,4 +1,4 @@
-const fetch = require("node-fetch"); // make sure node-fetch is installed
+const fetch = require("node-fetch");
 
 const API_URL =
   "https://lite-api.jup.ag/price/v3?ids=JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN";
@@ -18,7 +18,7 @@ async function getPrice() {
 
 // Retry wrapper
 async function getPriceWithRetry() {
-  const delays = [3000, 5000, 10000]; // ms
+  const delays = [3000, 5000, 10000];
   for (let i = 0; i <= delays.length; i++) {
     try {
       return await getPrice();
