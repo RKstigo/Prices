@@ -1,7 +1,7 @@
 const { Octokit } = require("@octokit/rest");
 
 const GIST_ID = process.env.GIST_ID; // from Render env
-const FILE_NAME = "prices.csv";
+const FILE_NAME = "jupPrices.csv";
 
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
